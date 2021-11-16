@@ -1,0 +1,166 @@
+plugins {
+  id 'com.android.application'
+  id 'kotlin-android'
+  id 'kotlin-kapt'
+}
+
+
+android {
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  //buildToolsVersion rootProject.ext.buildToolsVersion
+
+  defaultConfig {
+    applicationId "com.example.android.architecture.blueprints.todomvp"
+    minSdkVersion rootProject.ext.minSdkVersion
+    targetSdkVersion rootProject.ext.targetSdkVersion
+    versionCode 1
+    versionName "1.0"
+    multiDexEnabled true
+
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  buildTypes {
+    debug {
+      // Minifying the variant used for tests is not supported when using Jack.
+      minifyEnabled false
+      // Uses new built-in shrinker http://tools.android.com/tech-docs/new-build-system/built-in-shrinker
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
+    }
+
+    release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
+    }
+  }
+
+  sourceSets {
+    String sharedTestDir = 'src/sharedTest/java'
+    androidTest {
+      java.srcDirs += sharedTestDir
+    }
+    test {
+      java.srcDirs += sharedTestDir
+    }
+  }
+
+  flavorDimensions "default"
+
+  // If you need to add more flavors, consider using flavor dimensions.
+  productFlavors {
+    mock {
+      applicationIdSuffix = ".mock"
+    }
+    prod {}
+  }
+
+  // Remove mockRelease as it's not needed.
+  android.variantFilter { variant ->
+    if (variant.buildType.name == 'release' && variant.getFlavors().get(0).name == 'mock') {
+      variant.setIgnore(true)
+    }
+  }
+
+  lintOptions {
+    warning 'InvalidPackage' // prevent error from references of non-Android package
+  }
+
+  // Always show the result of every unit test, even if it passes.
+  testOptions.unitTests.all {
+    testLogging {
+      events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+    }
+  }
+
+  packagingOptions {
+    exclude 'META-INF/AL2.0'
+    exclude 'META-INF/LGPL2.1'
+  }
+}
+
+/*
+ Dependency versions are defined in the top level build.gradle file. This helps keeping track of
+ all versions in a single place. This improves readability and helps managing project complexity.
+ */
+dependencies {
+
+  implementation "androidx.multidex:multidex:$rootProject.multidex_version"
+
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+  implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+  // App's dependencies, including test
+  implementation 'androidx.appcompat:appcompat:1.0.0'
+  implementation 'androidx.cardview:cardview:1.0.0'
+  implementation 'com.google.android.material:material:1.0.0'
+  implementation 'androidx.recyclerview:recyclerview:1.0.0'
+  implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+  implementation 'androidx.test.espresso:espresso-idling-resource:3.1.0'
+  implementation "io.reactivex.rxjava2:rxjava:$rootProject.rxjavaVersion"
+  implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxandroidVersion"
+  implementation "com.squareup.sqlbrite2:sqlbrite:$rootProject.sqlbriteVersion"
+  implementation "com.jakewharton.rxbinding2:rxbinding-support-v4:$rootProject.rxBindingVersion"
+  implementation 'androidx.lifecycle:lifecycle-runtime:2.0.0'
+  implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+  implementation "io.reactivex.rxjava2:rxkotlin:$rootProject.rxKotlinVersion"
+  kapt 'androidx.lifecycle:lifecycle-compiler:2.0.0'
+
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.2'
+
+  implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+  implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
+
+  // Dependencies for local unit tests
+  testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+  testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2'
+  testImplementation "com.nhaarman:mockito-kotlin:$rootProject.mockitoKotlinVersion"
+  testImplementation "junit:junit:$rootProject.junitVersion"
+  testImplementation "org.mockito:mockito-all:$rootProject.mockitoVersion"
+  testImplementation "org.hamcrest:hamcrest-all:$rootProject.hamcrestVersion"
+  testImplementation "io.mockk:mockk:$rootProject.mockkVersion"
+  testImplementation "io.mockk:mockk-agent-jvm:$rootProject.mockkVersion"
+
+  // Android Testing Support Library's runner and rules
+  androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+  androidTestImplementation 'androidx.test:rules:1.1.1'
+  androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2'
+
+  // Dependencies for Android unit tests
+  androidTestImplementation "junit:junit:$rootProject.junitVersion"
+  androidTestImplementation "org.mockito:mockito-core:$rootProject.mockitoVersion"
+  androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
+  androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
+
+  // Espresso UI Testing
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+  androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0'
+  androidTestImplementation 'androidx.test.espresso:espresso-intents:3.1.0'
+
+  androidTestImplementation "androidx.arch.core:core-testing:$rootProject.archTestingVersion"
+
+
+  // Resolve conflicts between main and test APK:
+  androidTestImplementation 'androidx.annotation:annotation:1.0.0'
+  androidTestImplementation 'androidx.legacy:legacy-support-v4:1.0.0'
+  androidTestImplementation 'androidx.recyclerview:recyclerview:1.0.0'
+  androidTestImplementation 'androidx.appcompat:appcompat:1.0.0'
+  androidTestImplementation 'com.google.android.material:material:1.0.0'
+}
+
+/*
+Resolves dependency versions across test and production APKs, specifically, transitive
+dependencies. This is required since Espresso internally has a dependency on support-annotations.
+*/
+configurations.all {
+  //  resolutionStrategy.force "com.android.support:support-annotations:$rootProject.ext.lib.supportLibraryVersion"
+  resolutionStrategy.force "com.google.code.findbugs:jsr305:$rootProject.jsr305Version"
+}
